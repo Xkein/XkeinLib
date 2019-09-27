@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010"> 
+  
+  <Type Name="xkein::DynamicArray&lt;*&gt;">  
+    <DisplayString>{{ size={_Length} }}</DisplayString>  
+    <Expand>  
+        <Item Name="[size]" ExcludeView="simple">_Length</Item>  
+        <Item Name="[capacity]" ExcludeView="simple">_Capacity</Item>  
+        <Item Name="[capacity_increament]" ExcludeView="simple">_CapacityIncreament</Item>  
+        <ArrayItems Optional="true">  
+            <Size>_Length</Size>  
+            <ValuePointer>_Ptr</ValuePointer>  
+        </ArrayItems>  
+    </Expand>  
+  </Type>  
+
+  <Type Name="xkein::Array&lt;*,*&gt;">  
+    <DisplayString>{{ size={_Length} }}</DisplayString>  
+    <Expand>  
+        <Item Name="[size]" ExcludeView="simple">_Length</Item>  
+        <Item Name="[dimensions]" ExcludeView="simple">$T2</Item>  
+        <ArrayItems Condition="_Ptr != 0">  
+            <Direction>Forward</Direction>  
+            <Rank>$T2</Rank>  
+            <Size>_DimensionRule[$i]</Size>  
+            <ValuePointer>($T1*) _Ptr</ValuePointer>  
+        </ArrayItems>  
+    </Expand>  
+  </Type>  
+
+</AutoVisualizer>
