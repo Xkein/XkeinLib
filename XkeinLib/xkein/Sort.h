@@ -4,7 +4,7 @@
 
 XKEINNAMESPACE_START
 
-enum SortMethod
+enum class SortMethod
 {
 	MergeSort, QuickSort, MergeInsertionSort, InsertionSort, StdSort, StdHeapSort, BubbleSort
 };
