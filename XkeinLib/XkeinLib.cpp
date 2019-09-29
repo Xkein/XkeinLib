@@ -48,6 +48,10 @@ int main() noexcept
 
 	SortClass sssss;
 
+	random.FillRandomData(seq.begin(), seq.end());
+	sssss.Sort<SortMethod::BubbleSort>(seq.begin(), seq.end());
+	
+
 	for (int idx = 0; idx < 100; idx++) {
 		random.FillRandomData(seq.begin(), seq.end());
 		result += time.EstimateFunctionCycleTime([&]() {sssss.Sort<SortMethod::QuickSort>(seq.begin(), seq.end()); });

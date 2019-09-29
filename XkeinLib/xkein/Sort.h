@@ -6,7 +6,7 @@ XKEINNAMESPACE_START
 
 enum SortMethod
 {
-	MergeSort, QuickSort, MergeInsertionSort, InsertionSort, StdSort, StdHeapSort
+	MergeSort, QuickSort, MergeInsertionSort, InsertionSort, StdSort, StdHeapSort, BubbleSort
 };
 
 class SortClass
@@ -270,6 +270,21 @@ protected:
 		return _First;
 	}
 
+	SORT_FUNCTION(BubbleSort)
+	{
+		size_t _length = _End - _First;
+		_Ty* _EndIter = _End;
+		while (--_EndIter > _First) {
+			for (_Ty* _Iter = _First; _Iter < _EndIter; _Iter++) {
+				_Ty* nextIter = _Iter + 1;
+				if (!_Pred(*_Iter, *nextIter)) {
+					std::swap(*_Iter, *nextIter);
+				}
+			}
+		}
+		return _First;
+	}
+
 	// not necessary
 	//SORTARRAY_FUNCTION(MergeSort)
 	//SORTARRAY_FUNCTION(InsertionSort)
@@ -293,6 +308,8 @@ protected:
 			return &SortClass::StdSort<_Ty, _Pr>;
 		case SortMethod::StdHeapSort:
 			return &SortClass::StdHeapSort<_Ty, _Pr>;
+		case SortMethod::BubbleSort:
+			return &SortClass::BubbleSort<_Ty, _Pr>;
 		default:
 			break;
 		}
