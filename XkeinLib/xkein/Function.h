@@ -148,6 +148,7 @@ XKEINNAMESPACE_START
 	_MEMBER_CALL_CV_REF_NOEXCEPT(_GET_CLASS_FUNCTION_INFORMATION_)
 #pragma warning(pop)
 #undef _GET_FUNCTION_INFORMATION_
+#undef _GET_CLASS_FUNCTION_INFORMATION_
 
 	template<class _Func>
 	constexpr FunctionInformation<_Func> GetFunctionInformation(_Func) {

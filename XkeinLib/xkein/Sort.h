@@ -14,6 +14,7 @@ class SortClass
 public:
 	template <class _Ty>
 	using DefaultPred = std::less<>;
+#define swap std::swap
 
 	SortClass() _NOEXCEPT : CheckSequence(true), ThrowError(true)
 	{
@@ -130,7 +131,7 @@ protected:
 		else if (_length == 2) {
 			_Ty* const _Last = _End - 1;
 			if (!_Pred(*_First, *_Last)) {
-				std::swap(*_First, *_Last);
+				swap(*_First, *_Last);
 			}
 			return _First;
 		}
@@ -163,7 +164,7 @@ protected:
 		else
 		{
 			if (!_Pred(*_First, _First[1])) {
-				std::swap(*_First, _First[1]);
+				swap(*_First, _First[1]);
 			}
 
 			for (size_t idx = 2; idx < _length; idx++) {
@@ -233,7 +234,7 @@ protected:
 		{
 			_Ty* const _Last = _End - 1;
 			if (!_Pred(*_First, *_Last)) {
-				std::swap(*_First, *_Last);
+				swap(*_First, *_Last);
 			}
 			return _First;
 		}
@@ -244,10 +245,10 @@ protected:
 			for (_Ty* _Iter2 = _Iter1 + 1; _Iter2 < _End; _Iter2++)
 			{
 				if (!_Pred(*_Pivot, *_Iter2)) {
-					std::swap(*++_Iter1, *_Iter2);
+					swap(*++_Iter1, *_Iter2);
 				}
 			}
-			std::swap(*_Pivot, *_Iter1);
+			swap(*_Pivot, *_Iter1);
 			QuickSortBase(_First, _Iter1, _Pred);
 			QuickSortBase(_Iter1 + 1, _End, _Pred);
 		}
@@ -272,13 +273,12 @@ protected:
 
 	SORT_FUNCTION(BubbleSort)
 	{
-		size_t _length = _End - _First;
 		_Ty* _EndIter = _End;
 		while (--_EndIter > _First) {
 			for (_Ty* _Iter = _First; _Iter < _EndIter; _Iter++) {
 				_Ty* nextIter = _Iter + 1;
 				if (!_Pred(*_Iter, *nextIter)) {
-					std::swap(*_Iter, *nextIter);
+					swap(*_Iter, *nextIter);
 				}
 			}
 		}
@@ -326,5 +326,8 @@ public:
 
 protected:
 	Random random;
+#undef swap
+#undef SORT_FUNCTION
 };
+
 XKEINNAMESPACE_END

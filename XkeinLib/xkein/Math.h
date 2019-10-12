@@ -8,13 +8,13 @@ template<class _Ty>
 struct Interval : public std::pair<_Ty, _Ty>
 {
 	using base = std::pair<_Ty, _Ty>;
-
+protected:
 	static constexpr unsigned int GetIntervalTypeValue(char left, char right) _NOEXCEPT
 	{
 		return MAKEWORD(left, right);
 	}
-
-	enum IntervalType {
+public:
+	enum class IntervalType {
 		Open_Open = GetIntervalTypeValue('(', ')'),
 		Close_Close = GetIntervalTypeValue('[', ']'),
 		Open_Close = GetIntervalTypeValue('(', ']'),
