@@ -23,7 +23,7 @@ public:
 
 
 	template<class _Ty, class _Pr = DefaultPred<_Ty>>
-	bool IsSorted(_Ty * const _First, _Ty * const _End, const _Pr _Pred = _Pr())
+	bool IsSorted(_Ty * const _First, _Ty * const _End, _Pr _Pred = _Pr())
 	{
 		if (CheckSequence)
 		{
@@ -41,19 +41,19 @@ public:
 	}
 
 	template<class _Ty, size_t _length, class _Pr = DefaultPred<_Ty>>
-	bool IsSorted(_Ty(&_array)[_length], const _Pr _Pred = _Pr()) _NOEXCEPT
+	bool IsSorted(_Ty(&_array)[_length], _Pr _Pred = _Pr()) _NOEXCEPT
 	{
 		return IsSorted(&_array[0], &_array[_length], _Pred);
 	}
 
 	template<class _Iter, size_t _length, class _Pr = DefaultPred<_Iter>>
-	bool IsSorted(_Iter & _First, _Iter & _End, const _Pr _Pred = _Pr()) _NOEXCEPT
+	bool IsSorted(_Iter & _First, _Iter & _End, _Pr _Pred = _Pr()) _NOEXCEPT
 	{
-		return IsSorted(&*_First, &*_End, _Pred);
+		return IsSorted(&*_First, (&*(_End - 1)) + 1, _Pred);
 	}
 
 	template<SortMethod method = SortMethod::QuickSort, class _Ty, class _Pr = DefaultPred<_Ty>>
-	_Ty * Sort(_Ty * const _First, _Ty * const _End, const _Pr _Pred = _Pr()) _NOEXCEPT
+	_Ty * Sort(_Ty * const _First, _Ty * const _End, _Pr _Pred = _Pr()) _NOEXCEPT
 	{
 		(this->*GetSortFunction<_Ty, _Pr>(method))(_First, _End, _Pred);
 		IsSorted(_First, _End, _Pred);
@@ -61,13 +61,13 @@ public:
 	}
 
 	template<SortMethod method = SortMethod::QuickSort, class _Iter, class _Pr = DefaultPred<_Iter>>
-	auto Sort(_Iter & _First, _Iter & _End, const _Pr _Pred = _Pr()) _NOEXCEPT
+	auto Sort(_Iter & _First, _Iter & _End, _Pr _Pred = _Pr()) _NOEXCEPT
 	{
-		return Sort<method>(&*_First, &*_End, _Pred);
+		return Sort<method>(&*_First, (&*(_End - 1)) + 1, _Pred);
 	}
 
 	template<SortMethod method = SortMethod::QuickSort, class _Ty, size_t _length, class _Pr = DefaultPred<_Ty>>
-	_Ty * Sort(_Ty(&_array)[_length], const _Pr _Pred = _Pr()) _NOEXCEPT
+	_Ty * Sort(_Ty(&_array)[_length], _Pr _Pred = _Pr()) _NOEXCEPT
 	{
 		return Sort<method>(&_array[0], &_array[_length], _Pred);
 	}
@@ -75,23 +75,23 @@ public:
 
 protected:
 	template<class _Ty, class _Pr>
-	using SortFunction = _Ty * (__thiscall SortClass::*)(_Ty* const, _Ty* const, const _Pr) _NOEXCEPT;
+	using SortFunction = _Ty * (__thiscall SortClass::*)(_Ty* const, _Ty* const, _Pr) _NOEXCEPT;
 
 #define SORT_FUNCTION(name)													\
-	template<class _Ty, class _Pr = DefaultPred<_Ty>>						\
-	_Ty * name(_Ty* const _First, _Ty* const _End, const _Pr _Pred = _Pr()) _NOEXCEPT
+	template<class _Ty, class _Pr>						\
+	_Ty * name(_Ty* const _First, _Ty* const _End, _Pr _Pred) _NOEXCEPT
 
 	/*
 	#define SORTARRAY_FUNCTION(name)										\
 		template<class _Ty, size_t _length, class _Pr = DefaultPred<_Ty>>	\
-		_Ty * name(_Ty(&_array)[_length], const _Pr _Pred = _Pr())			\
+		_Ty * name(_Ty(&_array)[_length], _Pr _Pred = _Pr())			\
 		{																	\
 			return name(&_array[0], &_array[_length], _Pred);				\
 		}
 	*/
 
-	template<class _Ty, class _Pr = DefaultPred<_Ty>>
-	_Ty * Merge(_Ty * const _First, size_t _mid, size_t _length, const _Pr _Pred = _Pr()) _NOEXCEPT
+	template<class _Ty, class _Pr>
+	_Ty * Merge(_Ty * const _First, size_t _mid, size_t _length, _Pr _Pred) _NOEXCEPT
 	{
 		size_t idxl = 0, idxr = _mid, idx = 0;
 		_Ty* buf = new _Ty[_length];
@@ -139,8 +139,8 @@ protected:
 		{
 			const size_t _mid = _length / 2;
 
-			MergeSortBase(_First, _First + _mid);
-			MergeSortBase(_First + _mid, _End);
+			MergeSortBase(_First, _First + _mid, _Pred);
+			MergeSortBase(_First + _mid, _End, _Pred);
 
 			Merge(_First, _mid, _length, _Pred);
 
@@ -195,8 +195,8 @@ protected:
 		else {
 			const size_t _mid = _length / 2;
 
-			MergeInsertionSortBase(_First, _First + _mid);
-			MergeInsertionSortBase(_First + _mid, _End);
+			MergeInsertionSortBase(_First, _First + _mid, _Pred);
+			MergeInsertionSortBase(_First + _mid, _End, _Pred);
 
 			Merge(_First, _mid, _length, _Pred);
 

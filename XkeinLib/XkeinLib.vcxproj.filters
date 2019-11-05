@@ -81,6 +81,9 @@
     <ClInclude Include="xkein\Math.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="xkein\Console\List.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

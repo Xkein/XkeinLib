@@ -296,6 +296,51 @@ XKEINNAMESPACE_START
 	constexpr bool is_all_false(_Args... args) _NOEXCEPT { return !is_have_true(args...); }
 
 
+	template<class... Types>
+	struct TypesCounter {
+		using type = void;
+		enum { ret = 0 };
+	};
+	template<class head, class... tails>
+	struct TypesCounter<head, tails...>
+	{
+		using type = head;
+		typedef TypesCounter<tails...> _Tails;
+		enum { ret = 1 + _Tails::ret };
+	};
 
+	template<class _Ty, size_t... idxes>
+	void* DynamicGetImpl(_Ty& obj, size_t idx, std::index_sequence<idxes...>) _NOEXCEPT
+	{
+		void* ret = nullptr;
+		std::initializer_list{ (idx == idxes && (ret = Convert<void*>(&std::get<idxes>(obj))), idxes)... };
+		return ret;
+	}
+	template<class _Ty>
+	void* DynamicGetTupleImple(_Ty& obj, size_t idx) _NOEXCEPT
+	{
+		return DynamicGetImpl(obj, idx, std::make_index_sequence<std::tuple_size_v<_Ty>>());
+	}
+
+	/* not so good
+	template<size_t>
+	void* GetTupleItem(size_t index, std::tuple<> tuple, size_t cur = size_t(0))
+	{
+		throw std::out_of_range("xkein::GetTupleItem::out of range!");
+	};
+	template<size_t size, class head, class... tails>
+	void* GetTupleItem(size_t index, std::tuple<head, tails...>& tuple, size_t cur = size_t(0)) {
+
+		if (index == cur) {
+			return Convert<void*>(&std::get<0>(tuple));
+		}
+		else if (size > index) {
+			return GetTupleItem<size, tails...>(index, tuple._Get_rest(), cur + 1);
+		}
+		else {
+			throw std::out_of_range("xkein::GetTupleItem::out of range!");
+		}
+	}
+	*/
 
 XKEINNAMESPACE_END

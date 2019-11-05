@@ -189,7 +189,7 @@ XKEINNAMESPACE_START
 		{
 		}
 
-		DynamicArray(size_t _capacity) _NOEXCEPT : _PtrFirst(nullptr), _Ptr(nullptr), _Length(0), _CapacityIncreament(_firstCapacityIncreament)
+		DynamicArray(size_t _capacity) _NOEXCEPT : _PtrFirst(nullptr), _Ptr(nullptr), _Capacity(0), _Length(0), _CapacityIncreament(_firstCapacityIncreament)
 		{
 			Alloc(_capacity);
 		}
@@ -401,6 +401,7 @@ XKEINNAMESPACE_START
 			other._CapacityIncreament = _firstCapacityIncreament;
 			other._PtrFirst = nullptr;
 			other._Ptr = nullptr;
+			return (*this);
 		}
 
 		_Ty& operator[](int offset) const

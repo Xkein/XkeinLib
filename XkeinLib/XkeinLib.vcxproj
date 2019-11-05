@@ -84,7 +84,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -145,6 +145,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="xkein.h" />
     <ClInclude Include="xkein\Class.h" />
+    <ClInclude Include="xkein\Console\List.h" />
     <ClInclude Include="xkein\DataStruct.h" />
     <ClInclude Include="xkein\ExceptionHandler.h" />
     <ClInclude Include="xkein\File.h" />

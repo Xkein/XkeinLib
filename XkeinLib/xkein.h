@@ -71,11 +71,14 @@
 #include "xkein/DataStruct.h"
 #include "xkein/tools.h"
 #include "xkein/ExceptionHandler.h"
-#include "xkein/UI/Control.h"
 #include "xkein/Class.h"
 #include "xkein/Search.h"
 #include "xkein/Sort.h"
 #include "xkein/Math.h"
+
+#include "xkein/UI/Control.h"
+
+#include "xkein/Console/List.h"
 
 #include <map>
 
