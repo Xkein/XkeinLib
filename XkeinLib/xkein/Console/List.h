@@ -53,13 +53,16 @@ public:
 	{
 		if (idx < typeCounts) {
 			headers[idx] = header;
+			const size_t length = strlen(header);
+			if (widths[idx] < length)
+				widths[idx] = length;
 		}
 	}
 
 	void SetHeader(const char* const* pHeaders) _NOEXCEPT
 	{
 		for (int idx = 0; idx < typeCounts; idx++) {
-			headers[idx] = pHeaders[idx];
+			SetHeader(pHeaders[idx], idx);
 		}
 	}
 

@@ -39,6 +39,10 @@ XKEINNAMESPACE_START
 #define USING_SIMPLE_NAME_TYPENAME _Ty
 #endif
 
+#ifndef UNREFERENCED_PARAMETER
+#define UNREFERENCED_PARAMETER(P) (P)
+#endif
+
 #define USING_SIMPLE_NAME(name) \
 	using name = xkein::name<USING_SIMPLE_NAME_TYPENAME>
 
@@ -310,16 +314,23 @@ XKEINNAMESPACE_START
 	};
 
 	template<class _Ty, size_t... idxes>
-	void* DynamicGetImpl(_Ty& obj, size_t idx, std::index_sequence<idxes...>) _NOEXCEPT
+	void* DynamicGetImplAddress(_Ty& obj, size_t idx, std::index_sequence<idxes...>) _NOEXCEPT
 	{
 		void* ret = nullptr;
 		std::initializer_list{ (idx == idxes && (ret = Convert<void*>(&std::get<idxes>(obj))), idxes)... };
 		return ret;
 	}
-	template<class _Ty>
-	void* DynamicGetTupleImple(_Ty& obj, size_t idx) _NOEXCEPT
+
+	template<class _Ret = void*, class _Ty>
+	std::add_lvalue_reference_t<_Ret> DynamicGetTupleImple(_Ty& obj, size_t idx) _NOEXCEPT
 	{
-		return DynamicGetImpl(obj, idx, std::make_index_sequence<std::tuple_size_v<_Ty>>());
+		return Convert<std::add_lvalue_reference_t<_Ret>>(DynamicGetImplAddress(obj, idx, std::make_index_sequence<std::tuple_size_v<_Ty>>()));
+	}
+
+	template<class _Ty>
+	constexpr size_t GetTupleSize(_Ty& obj) _NOEXCEPT
+	{
+		return std::tuple_size_v<_Ty>;
 	}
 
 	/* not so good
@@ -342,5 +353,225 @@ XKEINNAMESPACE_START
 		}
 	}
 	*/
+
+
+	char* itoa_(int val, char* buffer, int radix)
+	{
+		char tmp[100]{};
+		char* iter = buffer;
+
+		if (val < 0)
+			*iter++ = '-';
+
+		int _val = val;
+		char* tmpIter = tmp;
+
+		while (_val) {
+			char mod = (char)(_val % radix);
+			*tmpIter++ = mod >= 10 ? mod - 10 + 'a' : mod + '0';
+			_val /= radix;
+		}
+		while (tmpIter > tmp)
+		{
+			*iter++ = *--tmpIter;
+		}
+
+		*iter = '\0';
+		return buffer;
+	}
+
+
+	template<class _Ty>
+	struct DimensionCounter {
+		using ElementType = _Ty;
+		enum { ret = 0 };
+	};
+
+	template<class _Ty, size_t dimensions>
+	struct DimensionCounter<_Ty[dimensions]>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	struct DimensionCounter<_Ty[]>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	struct DimensionCounter<_Ty*>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	struct DimensionCounter<_Ty* const>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	struct DimensionCounter<_Ty* volatile>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	struct DimensionCounter<_Ty* const volatile>
+	{
+		typedef DimensionCounter<_Ty> NextCounter;
+		using ElementType = typename NextCounter::ElementType;
+		enum { ret = 1 + NextCounter::ret };
+	};
+
+	template<class _Ty>
+	constexpr size_t GetDimensions(_Ty element)
+	{
+		return 0;
+	}
+
+	template<class _Ty, size_t size>
+	constexpr size_t GetDimensions(_Ty(&arr)[size])
+	{
+		return DimensionCounter<_Ty[size]>::ret;
+	}
+
+	template<class _Ty>
+	constexpr size_t GetDimensions(_Ty(&arr)[])
+	{
+		return DimensionCounter<_Ty[]>::ret;
+	}
+
+	template<class _Ty>
+	struct ArrayInformation {
+		using ElementType = _Ty;
+	};
+
+
+#define ArrayInfo ArrayInformation<_Ty>
+	template<class _Ty>
+	constexpr std::pair<size_t, size_t> GetArrayDimensionInfo(size_t dimension, size_t cur = size_t(0))
+	{
+		if (dimension == cur) {
+			return { ArrayInfo::elementSize,ArrayInfo::size };
+		}
+		else {
+			if constexpr (std::is_array_v<typename ArrayInfo::NextType>)
+				return GetArrayDimensionInfo<typename ArrayInfo::NextType>(dimension, cur + 1);
+			else return { 0,0 };
+		}
+	}
+
+	template<class _Ty>
+	constexpr typename DimensionCounter<_Ty>::ElementType& GetArrayElement(_Ty& arr, size_t index)
+	{
+		if constexpr (std::is_pointer_v<_Ty>) {
+			const size_t nextTypeLength = sizeof(std::remove_pointer_t<_Ty>) / sizeof(typename DimensionCounter<_Ty>::ElementType);
+			if constexpr (std::is_array_v<std::remove_pointer_t<_Ty>>)
+				return GetArrayElement(arr[index / nextTypeLength], index % nextTypeLength);
+			else return arr[index];
+		}
+		else {
+			auto arrInfo = GetArrayInformation<_Ty>();
+			const size_t nextTypeLength = arrInfo.ElementLength[0] / sizeof(typename ArrayInfo::ElementType);
+			if constexpr (std::is_array_v<typename ArrayInfo::NextType>)
+				return GetArrayElement(arr[index / nextTypeLength], index % nextTypeLength);
+			else return arr[index];
+		}
+	}
+	/*
+	template<class ObjType, class _Ty>
+	constexpr ObjType& GetArrayFromDimension(_Ty arr)
+	{
+		std::array<typename ArrayInformation<ObjType>::NextType, ArrayInformation<ObjType>::size> tmp{}£»
+		if constexpr (std::is_same_v<DimensionCounter<_Ty>::ret, DimensionCounter<ObjType>::ret>)
+			return GetArrayFromDimension<ObjType>(arr);
+		else return &arr;
+	}
+	*/
+
+	template<class _Ty, size_t _Size>
+	struct ArrayInformation<_Ty[_Size]>
+	{
+		using NextType = _Ty;
+		static constexpr size_t size = _Size;
+		using DimensionCounter = DimensionCounter<_Ty[size]>;
+		using ElementType = typename DimensionCounter::ElementType;
+		using ArrayType = _Ty[size];
+		static constexpr size_t elementSize = sizeof(_Ty);
+		static constexpr size_t length = elementSize * size;
+		static constexpr size_t dimensions = DimensionCounter::ret;
+		ElementType* _ElementPtr;
+		NextType* _NextTypePtr;
+		std::array<size_t, dimensions> ElementLength;
+		std::array<size_t, dimensions> ElementCount;
+
+		constexpr ElementType& GetElement(size_t index) const
+		{
+			return GetArrayElement(_NextTypePtr, index);
+		}
+	};
+
+	template<class ArrayInformation>
+	constexpr auto GetArrayInformationBase(typename ArrayInformation::ElementType* pElem = nullptr, typename ArrayInformation::NextType* pNextType = nullptr)
+	{
+		ArrayInformation tmp{};
+		tmp._NextTypePtr = pNextType;
+		tmp._ElementPtr = pElem;
+		for (size_t idx = 0; idx < tmp.dimensions; ++idx) {
+			tmp.ElementLength[idx] = GetArrayDimensionInfo<ArrayInformation::ArrayType>(idx).first;
+			tmp.ElementCount[idx] = GetArrayDimensionInfo<ArrayInformation::ArrayType>(idx).second;
+		}
+		return tmp;
+	}
+
+	template<class _Ty>
+	constexpr auto GetArrayInformation(typename ArrayInfo::ElementType* ptr = nullptr)
+	{
+		return GetArrayInformationBase<ArrayInfo>(ptr);
+		/*
+		using ArrayType = typename ArrayInfo::ArrayType;
+		ArrayInformation<ArrayType> tmp{};
+		tmp._ElementPtr = ptr;
+		//tmp._NextTypePtr = reinterpret_cast<std::add_const_t<typename ArrayInfo::NextType>*>(ptr);
+		for (size_t idx = 0; idx < tmp.dimensions; ++idx) {
+			tmp.ElementLength[idx] = GetArrayDimensionInfo<ArrayType>(idx).first;
+			tmp.ElementCount[idx] = GetArrayDimensionInfo<ArrayType>(idx).second;
+		}
+		return tmp;
+		*/
+	}
+
+	template<class _Ty, size_t size>
+	constexpr auto GetArrayInformation(_Ty(&arr)[size])
+	{
+		return GetArrayInformationBase<ArrayInformation<_Ty[size]>>(&GetArrayElement(arr, 0), arr);
+		/*
+		using ArrayType = _Ty[size];
+		ArrayInformation<ArrayType> tmp{};
+		tmp._NextTypePtr = arr;
+		//tmp._ElementPtr = reinterpret_cast<std::add_const_t<typename ArrayInfo::ElementType>*>(arr);
+		for (size_t idx = 0; idx < tmp.dimensions; ++idx) {
+			tmp.ElementLength[idx] = GetArrayDimensionInfo<ArrayType>(idx).first;
+			tmp.ElementCount[idx] = GetArrayDimensionInfo<ArrayType>(idx).second;
+		}
+		return tmp;
+		*/
+	}
+
+#undef ArrayInfo
+
+
 
 XKEINNAMESPACE_END

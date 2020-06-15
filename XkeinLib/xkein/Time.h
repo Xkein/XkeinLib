@@ -18,14 +18,14 @@ XKEINNAMESPACE_START
 		};
 
 		template<class _Func, class... _Tys>
-		LONGLONG EstimateFunctionThreadTimes(_Func _Func, _Tys... _values)
+		LONGLONG EstimateFunctionThreadTimes(_Func _Fun, _Tys... _values)
 		{
 			FILETIME ftDummy;
 			RaiseThreadPriority();
 
 			GetThreadTimes(GetCurrentThread(), &ftDummy, &ftDummy, &ftKernelTimeStart.filetime, &ftUserTimeStart.filetime);
 			
-			_Func(_values...);
+			_Fun(_values...);
 
 			GetThreadTimes(GetCurrentThread(), &ftDummy, &ftDummy, &ftKernelTimeEnd.filetime, &ftUserTimeEnd.filetime);
 
@@ -38,12 +38,12 @@ XKEINNAMESPACE_START
 		}
 
 		template<bool _divFrequency = false, class _Func, class... _Tys>
-		LONGLONG EstimateFunctionPerformance(_Func _Func, _Tys... _values)
+		LONGLONG EstimateFunctionPerformance(_Func _Fun, _Tys... _values)
 		{
 			RaiseThreadPriority();
 
 			QueryPerformanceCounter(&liPerformanceStart);
-			_Func(_values...);
+			_Fun(_values...);
 			QueryPerformanceCounter(&liPerformanceEnd);
 
 			DropBackThreadPriority();
@@ -56,12 +56,12 @@ XKEINNAMESPACE_START
 		}
 
 		template<class _Func, class... _Tys>
-		LONGLONG EstimateFunctionCycleTime(_Func _Func, _Tys... _values)
+		LONGLONG EstimateFunctionCycleTime(_Func _Fun, _Tys... _values)
 		{
 			RaiseThreadPriority();
 
 			QueryThreadCycleTime(GetCurrentThread(), (PULONG64)&liPerformanceStart.QuadPart);
-			_Func(_values...);
+			_Fun(_values...);
 			QueryThreadCycleTime(GetCurrentThread(), (PULONG64)&liPerformanceEnd.QuadPart);
 
 			DropBackThreadPriority();

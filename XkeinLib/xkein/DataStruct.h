@@ -104,6 +104,22 @@ XKEINNAMESPACE_START
 			}
 		}
 
+		template<class _ArrTy>
+		Array(_ArrTy& arr, void* _ptr = nullptr) _NOEXCEPT_COND(_NOEXCEPT_OPER(std::is_nothrow_default_constructible_v<_Ty>))
+		{
+			auto arrInfo = GetArrayInformation<_ArrTy>();
+			static_assert(decltype(arrInfo)::dimensions == _dimension
+				, "xkein::Array::invaild array.");
+			for (int idx = 0; idx < _dimension; idx++) {
+				_DimensionRule[idx] = arrInfo.ElementCount[idx];
+				_ArrayIterator[idx]._Ptr = nullptr;
+				_ArrayIterator[idx]._EachLength = arrInfo.ElementLength[idx] / sizeof(_Ty);
+			}
+			_Length = arrInfo.length / sizeof(_Ty);
+			_Ptr = (_IAllocated = _ptr == nullptr) ? new _Ty[_Length] : (_Ty*)_ptr;
+			memcpy_s(_Ptr, arrInfo.length, arr, arrInfo.length);
+		}
+
 		~Array() _NOEXCEPT_COND(_NOEXCEPT_OPER(std::is_nothrow_destructible_v<_Ty>))
 		{
 			_Length = 0;
@@ -381,11 +397,6 @@ XKEINNAMESPACE_START
 		_MyT& operator=(const _MyT& other) _NOEXCEPT_COND(_NOEXCEPT_OPER(std::is_nothrow_copy_constructible_v<_Ty> && std::is_nothrow_destructible_v<_Ty>))
 		{
 			Copy(other._Ptr, 0, other._Length);
-			_Capacity = other._Capacity;
-			_Length = other._Length;
-			_CapacityIncreament = other._CapacityIncreament;
-			_PtrFirst = other._PtrFirst;
-			_Ptr = other._Ptr;
 			return (*this);
 		}
 
@@ -416,22 +427,22 @@ XKEINNAMESPACE_START
 
 		const iterator begin() const _NOEXCEPT
 		{
-			return _Ptr;
+			return iterator(_Ptr);
 		}
 
 		const iterator end() const _NOEXCEPT
 		{
-			return _Ptr + _Length;
+			return iterator(_Ptr + _Length);
 		}
 
 		iterator begin() _NOEXCEPT
 		{
-			return _Ptr;
+			return iterator(_Ptr);
 		}
 
 		iterator end() _NOEXCEPT
 		{
-			return _Ptr + _Length;
+			return iterator(_Ptr + _Length);
 		}
 
 		size_t length() const _NOEXCEPT

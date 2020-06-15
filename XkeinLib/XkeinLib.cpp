@@ -15,109 +15,121 @@ helper func = []
 #define _XKEIN_TEST_
 //#define GLOBAL_INIT_EXCEPTIONHANDLER
 #include "xkein.h"
-using namespace xkein;
-using namespace xkeintest;
 #include "xkein/Class.h"
 
 using std::cin;
 using std::cout; using std::endl;
+using std::istream; using std::ostream;
+char buf[500], buf2[500];
+int intarr[]{1,2,12,15,15,13,135,135,135,1};
+using namespace xkein;
 
-
-class Student
+template <class Lambda>
+auto test(Lambda l)
+{
+	return &Lambda::operator();
+}
+auto lexm = [](int a, int b) {return 0; };
+class A
 {
 public:
-	static std::vector<Student> Array;
-
-
-	struct ExamResult
+	virtual int test(LambdaClass<int, int, int> lam, int a, int b)
 	{
-		double Total() const
-		{
-			return scores[0] + scores[1] + scores[2];
-		}
-		double Average() const
-		{
-			return Total() / 3.0;
-		}
-		double scores[3];
-	} exam;
-	int ID;
-	char name[32];
-	int Ranking;
-
-	static Student* Find(int ID)
-	{
-		for (auto& rStudent : Student::Array) {
-			if (rStudent.ID == ID)
-				return &rStudent;
-		}
-		return nullptr;
+		return lam(std::forward<int>(a), std::forward<int>(b));
 	}
-
 };
-std::vector<Student> Student::Array;
 
 int main()
 {
+	int c = 1;
+	auto ll = [&c](int a, int b) {return a + b + c; };
+	A a;
+	LambdaClass<int, int, int> lam(ll);
+	cout << lam(2, 5) << endl;
+	c = 7;
+	cout << a.test(ll, 2, 5) << endl;
+	cout << a.test([&ll, c](int a, int b) {return a + b + ll(2, 5) + c; }, 2, 5) << endl;
 
-	SortClass sssss;
+	int aaaa;
+	auto l = [aaaa](int b) {return true; };
+	auto ret = test(l);
+	(l.*ret)(1);
+	l.operator()(1);
+	l(1);
+	void* p = &l;
 
-	List<int, char*, int, int, int, int,int> list{ "id","name","NT","EN","PH","total","average" };
-	list.SetWidth({ 10,15,7,7,7,7,7 });
-	Student tmp;
-	tmp.ID = 1906300037;
-	strcpy(tmp.name, "me");
-	tmp.exam.scores[0] = 150;
-	tmp.exam.scores[1] = 150;
-	tmp.exam.scores[2] = 150;
-	Student::Array.push_back(tmp);
-	int num;
-	cout << "input the number of students:";
-	cin >> num;
-	puts("input the ID Name NT EN PH:");
-	while (num--) {
-		cin >> tmp.ID >> tmp.name >> tmp.exam.scores[0] >> tmp.exam.scores[1] >> tmp.exam.scores[2];
-		Student::Array.push_back(tmp);
+	long long test = (long long)(-0.0);
+
+	double fAngle = std::acos(1.0);
+	cout << Convert<long long>(fAngle) << endl;
+	int nIndex = 31 - int(fAngle / (3.141592654f / 2) * 32.0);
+	cout << nIndex << endl;
+	fAngle = -0.0;
+	bool ttt = 0.0 == fAngle;
+	bool ttt2 = -0.0 == fAngle;
+	nIndex = 31 - int(fAngle / (3.141592654f / 2) * 32.0);
+	__asm {
+		cvttss2si   eax, xmm0
+		mov [nIndex], eax
 	}
-	sssss.Sort(Student::Array.begin(), Student::Array.end(), [](const Student& left, const Student& right) {return left.exam.Total() >= right.exam.Total(); });
+	cout << nIndex << endl;
 
-	for (auto& rStudent : Student::Array) {
-		list.AddItem({ rStudent.ID,rStudent.name,rStudent.exam.scores[0],rStudent.exam.scores[1],rStudent.exam.scores[2],rStudent.exam.Total(),rStudent.exam.Average() });
+	using namespace xkeintest;
+
+	/*
+	char n[100001];
+	const int mod = 1e9 + 7;
+	int x;
+	cin >> x >> n;//x是底数，n是指数
+	long long len = strlen(n), t = 0, i, ans = 1;
+	for (i = 0; i < len; i++)t = (t * 10 + n[i] - '0') % (mod - 1);
+	while (t > 0) {
+		if (t & 1) ans = ans * x % mod;
+		x = x * x % mod;
+		t >>= 1;
 	}
+	cout << ans << endl;
+	*/
+	constexpr auto ee = GetArrayInformation(intarr); 
+	constexpr const int* ppa = ee._ElementPtr;
+	//constexpr int aaaaaa = ee.GetElement(6);
+	BigNumber a1, b1;
+	cin >> buf;
+	a1.get_string(buf);
+	
+	a1 /= 2;
 
-	list.PrintList();
+	cout << a1.to_string(buf) << endl;
 
-	cout << "input the ID of student to search:";
-	int id;
-	cin >> id;
-
-	list.SetHeader("rank", 0);
-	list.SetWidth(4, 0);
-	list.Clear();
-	size_t length = Student::Array.size();
-	for (size_t idx = 0; idx < length; idx++) {
-		auto& rStudent = Student::Array[idx];
-		if (rStudent.ID == id) {
-			list.AddItem({ idx + 1,rStudent.name,rStudent.exam.scores[0],rStudent.exam.scores[1],rStudent.exam.scores[2],rStudent.exam.Total(),rStudent.exam.Average() });;
+	b1 = 2;
+	int pw = 1023;
+	for (size_t i = 1; i < pw; i++)
+	{
+		sprintf(buf2, "%.0f", pow(2, i + 1));
+		a1 *= b1;
+		a1.to_string(buf);
+		if (strcmp(buf, buf2) != 0) {
+			cout << buf << endl;
+			cout << buf2 << endl;
 		}
 	}
-
-	list.PrintList();
-
-
+	cout << buf << endl;
+	SortClass sssss;
 	Interval interval{ 0,5 };
 	Random random;
 	Time time;
 	DynamicArray<int> seq;
-	seq.Resize(3000);
-
+	seq.Resize(64);
+	int arr[2][3][2]{};
+	//int arr2[2], arr3[ee.GetElement(6)];
+	//cout << ee.ElementLength[2] << ee.GetElement(6);
 	long long result = 0;
 
 	for (int idx = 0; idx < 100; idx++) {
 		random.FillRandomData(seq.begin(), seq.end());
 		result += time.EstimateFunctionCycleTime([&]() {sssss.Sort<SortMethod::QuickSort>(seq.begin(), seq.end()); });
 	}
-	cout << result / 100i64 << endl;
+	cout << result / 100i64 << endl; 
 	result = 0;
 	random.ResetSeed();
 
@@ -139,7 +151,15 @@ int main()
 
 	for (int idx = 0; idx < 100; idx++) {
 		random.FillRandomData(seq.begin(), seq.end());
-		result += time.EstimateFunctionCycleTime([&]() {sssss.Sort<SortMethod::BubbleSort>(seq.begin(), seq.end()); });
+		result += time.EstimateFunctionCycleTime([&]() {sssss.Sort<SortMethod::InsertionSort>(seq.begin(), seq.end()); });
+	}
+	cout << result / 100i64 << endl;
+	result = 0;
+	random.ResetSeed();
+
+	for (int idx = 0; idx < 100; idx++) {
+		random.FillRandomData(seq.begin(), seq.end());
+		result += time.EstimateFunctionCycleTime([&]() {sssss.Sort<SortMethod::SelectionSort>(seq.begin(), seq.end()); });
 	}
 	cout << result / 100i64 << endl;
 	result = 0;

@@ -6,14 +6,14 @@ XKEINNAMESPACE_START
 
 enum class SortMethod
 {
-	MergeSort, QuickSort, MergeInsertionSort, InsertionSort, StdSort, StdHeapSort, BubbleSort
+	MergeSort, QuickSort, MergeInsertionSort, InsertionSort, StdSort, StdHeapSort, BubbleSort, SelectionSort
 };
 
 class SortClass
 {
 public:
 	template <class _Ty>
-	using DefaultPred = std::less<>;
+	using DefaultPred = std::less_equal<>;
 #define swap std::swap
 
 	SortClass() _NOEXCEPT : CheckSequence(true), ThrowError(true)
@@ -60,8 +60,8 @@ public:
 		return _First;
 	}
 
-	template<SortMethod method = SortMethod::QuickSort, class _Iter, class _Pr = DefaultPred<_Iter>>
-	auto Sort(_Iter & _First, _Iter & _End, _Pr _Pred = _Pr()) _NOEXCEPT
+	template<SortMethod method = SortMethod::QuickSort, class _Iter, class _Pr = DefaultPred<_Iter>, class = std::enable_if_t<!std::is_pointer_v<_Iter>>>
+	auto Sort(_Iter _First, _Iter _End, _Pr _Pred = _Pr()) _NOEXCEPT
 	{
 		return Sort<method>(&*_First, (&*(_End - 1)) + 1, _Pred);
 	}
@@ -168,17 +168,17 @@ protected:
 			}
 
 			for (size_t idx = 2; idx < _length; idx++) {
-				_Ty tmp = _First[idx];
+				_Ty* const tmp = _First + idx;
 				size_t i = idx;
 
 				while (i > 0) {
-					if (!_Pred(_First[i - 1], tmp)) {
+					if (!_Pred(_First[i - 1], *tmp)) {
 						_First[i] = _First[i - 1];
 					}
 					else break;
 					i--;
 				}
-				_First[i] = tmp;
+				_First[i] = *tmp;
 			}
 
 			return _First;
@@ -285,6 +285,22 @@ protected:
 		return _First;
 	}
 
+	SORT_FUNCTION(SelectionSort)
+	{
+		for (_Ty* _RIter = _End - 1; _RIter > _First; _RIter--) {
+			_Ty* tmp = _RIter;
+			for (_Ty* _Iter = _First; _Iter < _RIter; _Iter++) {
+				if (!_Pred(*_Iter, *tmp)) {
+					tmp = _Iter;
+				}
+			}
+			if (tmp != _RIter) {
+				swap(*tmp, *_RIter);
+			}
+		}
+		return _First;
+	}
+
 	// not necessary
 	//SORTARRAY_FUNCTION(MergeSort)
 	//SORTARRAY_FUNCTION(InsertionSort)
@@ -301,7 +317,7 @@ protected:
 		case SortMethod::QuickSort:
 			return &SortClass::QuickSort<_Ty, _Pr>;
 		case SortMethod::MergeInsertionSort:
-			return &SortClass::MergeInsertionSort<_Ty, _Pr>;
+			return &SortClass::MergeInsertionSort<_Ty, _Pr>;              
 		case SortMethod::InsertionSort:
 			return &SortClass::InsertionSort<_Ty, _Pr>;
 		case SortMethod::StdSort:
@@ -310,6 +326,8 @@ protected:
 			return &SortClass::StdHeapSort<_Ty, _Pr>;
 		case SortMethod::BubbleSort:
 			return &SortClass::BubbleSort<_Ty, _Pr>;
+		case SortMethod::SelectionSort:
+			return &SortClass::SelectionSort<_Ty, _Pr>;
 		default:
 			break;
 		}

@@ -18,7 +18,7 @@ XKEINNAMESPACE_START
 #endif
 
 	constexpr size_t GetArgPushSize(size_t size) {
-		return size != 0 ? max(size, _pushsize) : 0;
+		return size != 0 ? std::max(size, _pushsize) : 0;
 	}
 
 	template<class _Ty>
@@ -55,7 +55,9 @@ XKEINNAMESPACE_START
 	*/
 	template<size_t>
 	constexpr size_t GetArgSize(size_t index, size_t cur = size_t(0)) {
-		return (index, cur, size_t(0));
+		UNREFERENCED_PARAMETER(index);
+		UNREFERENCED_PARAMETER(cur);
+		return size_t(0);
 	}
 	template<size_t size, class head, class... tails>
 	constexpr size_t GetArgSize(size_t index, size_t cur = size_t(0)) {
@@ -99,7 +101,7 @@ XKEINNAMESPACE_START
 		static constexpr size_t ArgCount = sizeof...(_Args); \
 		static constexpr size_t ArgLength = ArgLengthHelper::ret; \
 		static constexpr size_t ArgPushTimes = ArgLength / _pushsize; \
-		static constexpr auto ArgSizes = GetEachArgSize<max(ArgCount, 1), _Args...>(); \
+		static constexpr auto ArgSizes = GetEachArgSize<std::max(ArgCount, 1u), _Args...>(); \
 		static constexpr bool is_function = true; \
 		static constexpr bool is__cdecl = std::is_same_v<type__me, type__cdecl>; \
 		static constexpr bool is__stdcall = std::is_same_v<type__me, type__stdcall>; \
@@ -126,7 +128,7 @@ XKEINNAMESPACE_START
 		static constexpr size_t ArgCount = sizeof...(_Args); \
 		static constexpr size_t ArgLength = ArgLengthHelper::ret; \
 		static constexpr size_t ArgPushTimes = ArgLength / _pushsize; \
-		static constexpr auto ArgSizes = GetEachArgSize<max(ArgCount, 1), _Args...>(); \
+		static constexpr auto ArgSizes = GetEachArgSize<std::max(ArgCount, 1u), _Args...>(); \
 		static constexpr bool is_function = true; \
 		static constexpr bool is__cdecl = std::is_same_v<type__me, type__cdecl>; \
 		static constexpr bool is__stdcall = std::is_same_v<type__me, type__stdcall>; \
@@ -288,10 +290,57 @@ XKEINNAMESPACE_START
 	}
 
 
-	class LambdaFunction
+	class LambdaObject
 	{
 	public:
-		virtual ~LambdaFunction() = 0;
+		template <class _LTy>
+		LambdaObject(_LTy& lamb) _NOEXCEPT
+		{
+			pObject = Convert<void*>(&lamb);
+		}
+
+		LambdaObject* GetThis() const _NOEXCEPT
+		{
+			return Convert<LambdaObject*>(pObject);
+		}
+
+		void* pObject;
+	};
+
+	template <class _LTy>
+	class LambdaFunction
+	{
+		using LFuncType = decltype(&_LTy::operator());
+	public:
+		LambdaFunction(_LTy& lamb) _NOEXCEPT
+		{
+			_Func = &_LTy::operator();
+		}
+		union {
+			LFuncType _Func;
+			void* _Ptr;
+		};
+	};
+
+	template<class _Ret, class... _Types>
+	class LambdaClass
+	{
+		using CallType = _Ret(LambdaObject::*)(_Types...);
+	public:
+		template <class _LTy>
+		LambdaClass(_LTy& lamb) _NOEXCEPT : _Obj(lamb)
+		{
+			_Func = Convert<CallType>(LambdaFunction(lamb)._Ptr);
+		}
+
+		_Ret operator()(_Types&&... _Args)
+		{
+			return (_Obj.GetThis()->*_Func)(std::forward<_Types>(_Args)...);
+		}
+
+		LambdaObject _Obj;
+		CallType _Func;
+
 	};
  
 

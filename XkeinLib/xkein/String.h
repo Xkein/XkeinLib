@@ -130,6 +130,8 @@ XKEINNAMESPACE_START
 		UTF8* utf8;
 	};
 
+#pragma warning(push)
+#pragma warning(disable: 4244)
 	template <class _Ty, int size, class _Ty2>
 	constexpr auto _DecArray(const _Ty(&arr)[size], _Ty2 decreasement)
 	{
@@ -139,10 +141,12 @@ XKEINNAMESPACE_START
 		}
 		return tmp;
 	}
+#pragma warning(pop)
 
 	// for using, #define DECSTRING(name, string) XKEIN__DECSTRING(name, string);
 #define XKEIN__DECSTRING(name, string) \
 namespace xkein_decarrayspace { constexpr auto name##dec = ::xkein::_DecArray(string, 1); } \
 constexpr auto name = xkein_decarrayspace::name##dec.data()
+
 
 XKEINNAMESPACE_END

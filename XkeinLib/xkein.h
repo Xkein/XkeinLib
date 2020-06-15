@@ -84,53 +84,7 @@
 
 namespace xkein
 {
-	/*
-	//template<class T>
-	class BigRealNumber
-	{
 
-
-	protected:
-		//template std::vector<T> numbers;
-		std::vector<int> integers;
-		std::vector<int> decimals;
-
-	public:
-		template<class T, size_t size = sizeof(T)>
-		BigRealNumber(T& value)
-		{
-			integers.push_back((int)value);
-			if (size == sizeof(long long)) {
-				intergets.push_back(value >> 32);
-			}
-		}
-
-		BigRealNumber(BigRealNumber& other)
-		{
-			numbers = other.numbers;
-		}
-
-		void FixNumber()
-		{
-			for (int idx = numbers.size() - 1; idx > 0; idx--) {
-				if (numbers[idx] == T(0)) {
-					numbers.pop_back();
-				}
-			}
-		}
-
-		BigRealNumber operator=(BigRealNumber& right)
-		{
-			numbers = right.numbers;
-		}
-
-		BigRealNumber operator+(BigRealNumber& right)
-		{
-			 T overflow = 0;
-
-		}
-	};
-	*/
 
 	class Operand {
 		const char* name;
@@ -664,6 +618,77 @@ namespace xkeintest
 		std::cout << std::endl;
 	}
 
+	void TestList()
+	{
+		SortClass sssss;
+
+
+		class Student
+		{
+		public:
+
+
+			struct ExamResult
+			{
+				double Total() const
+				{
+					return scores[0] + scores[1] + scores[2];
+				}
+				double Average() const
+				{
+					return Total() / 3.0;
+				}
+				double scores[3];
+			} exam;
+			int ID;
+			char name[32];
+
+		};
+		DynamicArray<Student> Array;
+
+		List<int, char*, int, int, int, int, int> list{ "id","name","NT","EN","PH","total","average" };
+		list.SetWidth({ 10,15,7,7,7,7,7 });
+		Student tmp;
+		tmp.ID = 1906300037;
+		strcpy(tmp.name, "me");
+		tmp.exam.scores[0] = 150;
+		tmp.exam.scores[1] = 150;
+		tmp.exam.scores[2] = 150;
+		Array.PushBack(tmp);
+		int num;
+		std::cout << "input the number of students:";
+		std::cin >> num;
+		puts("input the ID Name NT EN PH:");
+		while (num--) {
+			std::cin >> tmp.ID >> tmp.name >> tmp.exam.scores[0] >> tmp.exam.scores[1] >> tmp.exam.scores[2];
+			Array.PushBack(tmp);
+		}
+		sssss.Sort(Array.begin(), Array.end(), [](const Student& left, const Student& right) {return left.exam.Total() >= right.exam.Total(); });
+
+		for (auto& rStudent : Array) {
+			list.AddItem({ rStudent.ID,rStudent.name,rStudent.exam.scores[0],rStudent.exam.scores[1],rStudent.exam.scores[2],rStudent.exam.Total(),rStudent.exam.Average() });
+		}
+
+		list.PrintList();
+
+		std::cout << "input the ID of student to search:";
+		int id;
+		std::cin >> id;
+
+		list.SetHeader("rank", 0);
+		list.SetWidth(4, 0);
+		list.Clear();
+		size_t length = Array.length();
+		for (size_t idx = 0; idx < length; idx++) {
+			auto& rStudent = Array[idx];
+			if (rStudent.ID == id) {
+				list.AddItem({ idx + 1,rStudent.name,rStudent.exam.scores[0],rStudent.exam.scores[1],rStudent.exam.scores[2],rStudent.exam.Total(),rStudent.exam.Average() });;
+				break;
+			}
+		}
+
+		list.PrintList();
+	}
 }
 #endif // _XKEIN_TEST_
 
